@@ -3,73 +3,93 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="theme-color" content="#101a35">
-  <meta name="description" content="Web Mind BD Client Onboarding Portal — share only new information and project changes.">
+  <meta name="theme-color" content="#0b1120">
+  <meta name="description" content="Web Mind BD client onboarding portal.">
   <title>Client Onboarding | Web Mind BD</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;500;600;700&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css?v=3">
-  <script defer src="app.js?v=3"></script>
+  <link rel="stylesheet" href="style.css?v=4">
+  <script defer src="app.js?v=4"></script>
 </head>
 <body>
-  <div class="ambient ambient-one"></div>
-  <div class="ambient ambient-two"></div>
-  <div class="shell">
-    <header class="header">
-      <a class="brand" href="#" aria-label="Web Mind BD Client Portal">
-        <span class="brand-mark" id="brandMark">W<span>.</span></span>
-        <img class="brand-logo" id="brandLogo" alt="Web Mind BD agency logo" hidden>
-        <span class="brand-name"><strong>Web Mind BD</strong><small>CLIENT ONBOARDING PORTAL</small></span>
+  <div class="bg-orb orb-one"></div>
+  <div class="bg-orb orb-two"></div>
+  <div class="page-shell">
+    <header class="site-header">
+      <a class="brand" href="#" aria-label="Web Mind BD client portal">
+        <span class="logo-wrap"><img id="brandLogo" src="data:image/webp;base64,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" alt="Web Mind BD logo"></span>
+        <span class="brand-copy"><strong>Web Mind BD</strong><small>CLIENT ONBOARDING PORTAL</small></span>
       </a>
-      <span class="header-label"><i></i> Secure project questionnaire</span>
+      <span class="header-badge">Professional · Guided · Reusable</span>
     </header>
-    <div class="layout">
-      <aside class="intro">
-        <div class="eyebrow">✦ WEB MIND BD · CLIENT PORTAL</div>
-        <h1>একই তথ্য আবার নয়।<br><em>শুধু নতুনটা জানান।</em></h1>
-        <p class="lead">আগের ওয়েবসাইট বা পূর্বে পাঠানো তথ্য আমাদের কাছে থাকলে সেগুলো পুনরায় লেখার প্রয়োজন নেই। শুধু <strong>নতুন তথ্য, পরিবর্তন বা নির্দেশনা</strong> দিন। প্রয়োজনে সরাসরি লিখুন অথবা ডকুমেন্ট/ফাইলের লিংক দিন।</p>
-        <div class="notice">
-          <span class="notice-icon">i</span>
-          <p><strong>আগেই তথ্য দিয়েছেন?</strong> তাহলে সেই অংশ ফাঁকা রাখুন। কেবল যেটুকু পরিবর্তন করতে চান, সেটুকু জানান। কোনো নতুন তথ্য না থাকলেও ধাপ এড়িয়ে যেতে পারবেন।</p>
+
+    <div class="content-grid">
+      <aside class="intro-panel">
+        <div class="eyebrow">✦ WEB MIND BD</div>
+        <h1>একই তথ্য আবার নয়,<br><em>শুধু নতুনটা দিন।</em></h1>
+        <p class="lead">আগের ওয়েবসাইট, Messenger chat, বা পুরোনো project থেকে যদি তথ্য আগে থেকেই দেওয়া থাকে, তাহলে সেটা আবার লিখতে হবে না। শুধু <strong>নতুন তথ্য</strong>, <strong>পরিবর্তন</strong>, অথবা <strong>special instruction</strong> দিলেই হবে।</p>
+
+        <div class="guide-card">
+          <h3>কীভাবে ফর্ম পূরণ করবেন</h3>
+          <ol>
+            <li>যে Step-এ তথ্য দিতে চান সেখানে যান।</li>
+            <li><strong>Toggle ON</strong> করুন — তাহলেই ওই section-এর field দেখা যাবে।</li>
+            <li>শুধু নতুন / পরিবর্তিত info লিখুন অথবা link দিন।</li>
+            <li>কিছু না থাকলে section OFF রেখেই পরের ধাপে যান।</li>
+          </ol>
         </div>
-        <div class="benefits">
-          <div class="benefit"><span>01</span><p><strong>৬টি সহজ ধাপ</strong><small>সব প্রশ্ন Optional, ইচ্ছামতো Skip করুন</small></p></div>
-          <div class="benefit"><span>02</span><p><strong>প্রয়োজন অনুযায়ী ফিল্ড</strong><small>Section নির্বাচন করলেই সেই তথ্যের ঘর খুলবে</small></p></div>
-          <div class="benefit"><span>03</span><p><strong>অটো-সেভ ড্রাফট</strong><small>এই ব্রাউজারে ধাপ বদলালেও লেখা থাকবে</small></p></div>
+
+        <div class="feature-list">
+          <div class="feature-item"><span>01</span><div><strong>সব field optional</strong><small>কোনো কিছু না থাকলে ফাঁকা রাখতে পারবেন</small></div></div>
+          <div class="feature-item"><span>02</span><div><strong>Toggle-based sections</strong><small>প্রয়োজনীয় অংশ ON করলে তবেই field দেখা যাবে</small></div></div>
+          <div class="feature-item"><span>03</span><div><strong>Auto draft save</strong><small>Step change করলেও একই browser-এ লেখা থাকবে</small></div></div>
         </div>
-        <div class="reconcile">✓ আগে দেওয়া তথ্যের সঙ্গে নতুন তথ্য না মিললে কোনো পরিবর্তনের আগে আমরা আপনার সঙ্গে নিশ্চিত হব।</div>
+
+        <div class="note-box">✓ আগে দেওয়া তথ্যের সঙ্গে নতুন তথ্যের অমিল থাকলে Web Mind BD টিম পরিবর্তনের আগে আপনার সঙ্গে মিলিয়ে নেবে।</div>
       </aside>
 
-      <main class="form-card" id="formCard">
-        <div id="formContent">
-          <div class="form-meta"><span>WEBSITE PROJECT INTAKE</span><span id="stepCounter">STEP 01 / 06</span></div>
-          <div class="progress-track"><div id="progressBar" class="progress-bar"></div></div>
-          <div class="step-pills" id="stepPills" aria-label="Form steps"></div>
-          <form id="clientForm" novalidate>
-            <input name="_subject" id="subjectInput" type="hidden" value="Web Mind BD — New Client Information">
-            <input name="section_summary" id="sectionSummary" type="hidden">
-            <div class="honeypot" aria-hidden="true"><label>Keep blank<input type="text" name="_gotcha" autocomplete="off" tabindex="-1"></label></div>
-            <div id="stepContainer"></div>
-            <div id="formError" class="form-error" role="alert" hidden></div>
-            <div class="form-actions">
-              <button type="button" class="btn secondary" id="backBtn">← আগের ধাপ</button>
-              <span class="action-spacer"></span>
-              <button type="button" class="btn primary" id="nextBtn">পরের ধাপ →</button>
-              <button type="submit" class="btn primary" id="submitBtn" hidden>তথ্য জমা দিন ↗</button>
-            </div>
-            <div class="draft-note">✧ এই ব্রাউজারে তথ্য সাময়িকভাবে সেভ থাকে। অন্য ডিভাইসে স্বয়ংক্রিয়ভাবে যাবে না।</div>
-          </form>
+      <main class="form-card">
+        <div class="form-top">
+          <div>
+            <p class="form-label">WEBSITE PROJECT INTAKE</p>
+            <h2>Client Information Form</h2>
+          </div>
+          <div class="step-indicator" id="stepCount">STEP 01 / 06</div>
         </div>
-        <div id="successContent" class="success" hidden>
+
+        <div class="helper-bar">
+          <strong>Important:</strong> প্রতিটি section-এর ডান পাশে থাকা <strong>Toggle ON</strong> করলে field খুলবে। OFF থাকলে section লুকানো থাকবে।
+        </div>
+
+        <div class="progress-track"><span id="progressBar"></span></div>
+        <div class="step-pills" id="stepPills"></div>
+
+        <form id="clientForm" novalidate>
+          <input type="hidden" name="_subject" id="subjectInput" value="Web Mind BD Client Update">
+          <input type="hidden" name="enabled_sections" id="enabledSections">
+          <div class="honeypot" aria-hidden="true"><label>Leave blank<input type="text" name="_gotcha" autocomplete="off" tabindex="-1"></label></div>
+          <div id="stepContainer"></div>
+          <div id="formError" class="form-error" hidden></div>
+          <div class="form-nav">
+            <button type="button" class="btn btn-secondary" id="backBtn">← আগের ধাপ</button>
+            <span class="nav-spacer"></span>
+            <button type="button" class="btn btn-primary" id="nextBtn">পরের ধাপ →</button>
+            <button type="submit" class="btn btn-primary" id="submitBtn" hidden>তথ্য জমা দিন ↗</button>
+          </div>
+          <div class="draft-hint">Draft auto-save এই browser-এ কাজ করবে।</div>
+        </form>
+
+        <section id="successContent" class="success-panel" hidden>
           <div class="success-icon">✓</div>
-          <h2>তথ্য পাঠানো হয়েছে! 🎉</h2>
-          <p>আপনার দেওয়া নতুন তথ্য ও নির্দেশনা Web Mind BD টিমের কাছে পাঠানো হয়েছে। অস্পষ্ট বা আগের তথ্যের সঙ্গে অমিল থাকলে আমরা আপনার সঙ্গে মিলিয়ে নেব।</p>
-          <button id="newFormBtn" class="btn primary" type="button">আরেকটি ফর্ম পূরণ করুন</button>
-        </div>
+          <h2>ধন্যবাদ! তথ্য সফলভাবে পাঠানো হয়েছে।</h2>
+          <p>আপনার দেওয়া তথ্য Web Mind BD টিম পেয়েছে। যদি কোনো clarification দরকার হয়, আমরা যোগাযোগ করব।</p>
+          <button type="button" class="btn btn-primary" id="newFormBtn">নতুন ফর্ম শুরু করুন</button>
+        </section>
       </main>
     </div>
-    <footer>© <span id="year"></span> Web Mind BD · Client onboarding. Made for a simpler project workflow.</footer>
+
+    <footer class="site-footer">© <span id="year"></span> Web Mind BD · Client onboarding system</footer>
   </div>
 </body>
 </html>
