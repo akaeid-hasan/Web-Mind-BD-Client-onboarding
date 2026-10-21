@@ -1,179 +1,44 @@
-/**
- * AGENCY SETTINGS — edit these four values only.
- * Create a form at https://formspree.io and paste its endpoint below.
- */
-const SETTINGS = {
-  agencyName: 'Web Mind BD',
-  logoUrl: '', // e.g. 'https://yourdomain.com/logo.png' or 'assets/logo.png'
-  formspreeEndpoint: 'https://formspree.io/f/xqperyzd',
-  projectLabel: 'Client Onboarding'
-};
-
-const form = document.getElementById('clientForm');
-const steps = [...document.querySelectorAll('.step')];
-const backBtn = document.getElementById('backBtn');
-const nextBtn = document.getElementById('nextBtn');
-const submitBtn = document.getElementById('submitBtn');
-const errorBox = document.getElementById('formError');
-const STORAGE_KEY = 'agency_client_onboarding_draft_v1';
-let activeStep = 0;
-
-// Agency branding is set from one place.
-document.getElementById('agencyName').textContent = SETTINGS.agencyName;
-document.getElementById('agencyFooter').textContent = SETTINGS.agencyName;
-document.getElementById('copyrightYear').textContent = new Date().getFullYear();
-document.title = `Client Onboarding | ${SETTINGS.agencyName}`;
-document.querySelector('.header-tag').lastChild.textContent = ` ${SETTINGS.projectLabel}`;
-if (SETTINGS.logoUrl) {
-  const brandImage = document.getElementById('brandImage');
-  brandImage.src = SETTINGS.logoUrl;
-  brandImage.alt = `${SETTINGS.agencyName} logo`;
-  brandImage.hidden = false;
-  document.getElementById('brandIcon').hidden = true;
-  brandImage.addEventListener('error', () => {
-    brandImage.hidden = true;
-    document.getElementById('brandIcon').hidden = false;
-  });
-}
-
-function showError(message) {
-  errorBox.textContent = message;
-  errorBox.hidden = false;
-  errorBox.scrollIntoView({ behavior: 'smooth', block: 'center' });
-}
-function clearError() { errorBox.textContent = ''; errorBox.hidden = true; }
-function showStep(index) {
-  activeStep = Math.max(0, Math.min(steps.length - 1, index));
-  steps.forEach((el, i) => { el.hidden = i !== activeStep; el.classList.toggle('is-active', i === activeStep); });
-  document.getElementById('stepCount').textContent = `STEP ${String(activeStep + 1).padStart(2, '0')} / ${String(steps.length).padStart(2, '0')}`;
-  document.getElementById('progressBar').style.width = `${(activeStep + 1) * 100 / steps.length}%`;
-  backBtn.hidden = activeStep === 0;
-  nextBtn.hidden = activeStep === steps.length - 1;
-  submitBtn.hidden = activeStep !== steps.length - 1;
-  clearError();
-  if (activeStep === steps.length - 1) updateReview();
-  if (window.matchMedia('(max-width: 920px)').matches) document.getElementById('formCard').scrollIntoView({ block: 'start', behavior: 'smooth' });
-}
-function isStepValid(index) {
-  const fields = steps[index].querySelectorAll('input,textarea,select');
-  for (const field of fields) {
-    if (!field.checkValidity()) {
-      field.reportValidity();
-      field.focus();
-      return false;
-    }
-  }
-  return true;
-}
-function selectedPayments() {
-  return [...document.querySelectorAll('[data-payment]:checked')].map(el => el.dataset.payment).join(', ');
-}
-function updateReview() {
-  const value = name => (form.elements.namedItem(name)?.value || 'দেওয়া হয়নি').trim() || 'দেওয়া হয়নি';
-  const data = [
-    ['Business', value('business_name')],
-    ['Contact', value('contact_person')],
-    ['Email', value('email')],
-    ['Support number', value('support_number')],
-    ['Dhaka delivery', value('shipping_inside_dhaka') === 'দেওয়া হয়নি' ? 'দেওয়া হয়নি' : '৳' + value('shipping_inside_dhaka')],
-    ['Outside Dhaka', value('shipping_outside_dhaka') === 'দেওয়া হয়নি' ? 'দেওয়া হয়নি' : '৳' + value('shipping_outside_dhaka')],
-    ['Payment methods', selectedPayments() || 'দেওয়া হয়নি']
-  ];
-  const panel = document.getElementById('reviewPanel');
-  panel.replaceChildren();
-  const heading = document.createElement('h3');
-  heading.textContent = 'আপনার দেওয়া তথ্যের সারাংশ';
-  panel.appendChild(heading);
-  for (const [label, val] of data) {
-    const row = document.createElement('div'); row.className = 'review-item';
-    const labelEl = document.createElement('span'); labelEl.textContent = label;
-    const strong = document.createElement('strong'); strong.textContent = val;
-    row.append(labelEl, strong); panel.appendChild(row);
-  }
-}
-
-nextBtn.addEventListener('click', () => { if (isStepValid(activeStep)) { saveDraft(); showStep(activeStep + 1); } });
-backBtn.addEventListener('click', () => { saveDraft(); showStep(activeStep - 1); });
-
-function saveDraft() {
-  try {
-    const fields = [...form.querySelectorAll('input:not([type="hidden"]), textarea, select')];
-    const data = {};
-    fields.forEach(field => {
-      if (field.name === '_gotcha') return;
-      const key = field.dataset.payment ? `payment_${field.dataset.payment}` : (field.id === 'consent' ? 'consent' : field.name);
-      if (!key) return;
-      data[key] = field.type === 'checkbox' ? field.checked : field.value;
-    });
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
-  } catch (e) { /* Private browsing / disabled storage: continue without autosave. */ }
-}
-function restoreDraft() {
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY); if (!raw) return;
-    const data = JSON.parse(raw);
-    [...form.querySelectorAll('input:not([type="hidden"]), textarea, select')].forEach(field => {
-      const key = field.dataset.payment ? `payment_${field.dataset.payment}` : (field.id === 'consent' ? 'consent' : field.name);
-      if (!key || !(key in data)) return;
-      if (field.type === 'checkbox') field.checked = !!data[key];
-      else field.value = data[key];
-    });
-  } catch (e) { /* Corrupted or inaccessible local storage: ignore. */ }
-}
-form.addEventListener('input', saveDraft);
-form.addEventListener('change', saveDraft);
-restoreDraft();
-showStep(0);
-
-form.addEventListener('submit', async event => {
-  event.preventDefault();
-  clearError();
-  // Protect against submitting the last step while previous required fields are missing.
-  for (let i = 0; i < steps.length; i++) {
-    const invalidField = [...steps[i].querySelectorAll('input, textarea, select')].find(field => !field.checkValidity());
-    if (invalidField) {
-      showStep(i); // Show the section before focusing an invalid field.
-      invalidField.focus();
-      invalidField.reportValidity();
-      showError('অনুগ্রহ করে প্রয়োজনীয় তথ্যগুলো সঠিকভাবে পূরণ করুন।');
-      return;
-    }
-  }
-  const endpoint = SETTINGS.formspreeEndpoint;
-  if (!/^https:\/\/formspree\.io\/f\/[a-zA-Z0-9]+$/.test(endpoint)) {
-    showError('ফর্মটি এখনো সেটআপ করা হয়নি। Agency-কে Formspree endpoint যোগ করতে বলুন।');
-    return;
-  }
-  document.getElementById('paymentMethods').value = selectedPayments() || 'Not specified';
-  document.getElementById('subjectInput').value = `New Website Client Onboarding: ${form.elements.namedItem('business_name').value}`;
-  submitBtn.disabled = true;
-  const previousText = submitBtn.textContent;
-  submitBtn.textContent = 'সাবমিট হচ্ছে…';
-  try {
-    const res = await fetch(endpoint, {
-      method: 'POST', body: new FormData(form), headers: { 'Accept': 'application/json' }
-    });
-    if (!res.ok) {
-      let msg = 'সাবমিশন সফল হয়নি। আবার চেষ্টা করুন।';
-      try { const result = await res.json(); if (Array.isArray(result.errors)) msg = result.errors.map(e => e.message).join(' '); } catch (e) {}
-      throw new Error(msg);
-    }
-    try { localStorage.removeItem(STORAGE_KEY); } catch (e) {}
-    document.getElementById('formContent').hidden = true;
-    document.getElementById('successContent').hidden = false;
-    document.getElementById('formCard').scrollIntoView({ behavior: 'smooth', block: 'center' });
-  } catch (e) {
-    showError(e.message || 'সার্ভারে যোগাযোগ করা যায়নি। ইন্টারনেট সংযোগ চেক করুন।');
-  } finally {
-    submitBtn.disabled = false;
-    submitBtn.textContent = previousText;
-  }
-});
-
-document.getElementById('newFormBtn').addEventListener('click', () => {
-  form.reset();
-  try { localStorage.removeItem(STORAGE_KEY); } catch (e) {}
-  document.getElementById('formContent').hidden = false;
-  document.getElementById('successContent').hidden = true;
-  showStep(0);
-});
+const CONFIG={endpoint:"https://formspree.io/f/xqperyzd",logoUrl:"",draftKey:"webmind_intake_v3"};
+const steps=[
+{title:"Website & Business Details",bn:"ওয়েবসাইট ও ব্যবসার তথ্য",hint:"শুধু নতুন বা পরিবর্তিত তথ্য দিন; আগে যা দেওয়া আছে পুনরায় প্রয়োজন নেই।",groups:[
+{title:"Business & Contact",on:true,fields:[["Brand / Business Name","business_name"],["Existing Website URL","existing_website"],["New Information or Changes Needed","requested_changes","textarea"],["Contact Person’s Name","contact_person"],["Phone / WhatsApp Number","contact_phone"],["Email Address","contact_email"],["Business Address","business_address","textarea"]]},
+{title:"WooCommerce Store Settings",desc:"স্টোর, বিক্রয় অঞ্চল, কারেন্সি বা checkout settings নতুন করে নির্ধারণ করতে চাইলে খুলুন।",fields:[["Store Address Line 1","store_address_1"],["Store Address Line 2","store_address_2"],["City","store_city"],["Country / State / Region","store_country_state"],["Postcode / ZIP","store_postcode"],["Store Currency","store_currency","select",["","BDT — Bangladeshi Taka","USD — US Dollar","EUR — Euro","GBP — British Pound","INR — Indian Rupee","Other / Specify in notes"]],["Selling Locations","selling_locations","select",["","Sell to all countries","Sell to all countries except selected","Sell to specific countries"]],["Selling Countries / Exclusions","selling_countries","textarea"],["Shipping Locations (WooCommerce)","shipping_locations","select",["","Ship to all countries you sell to","Ship to all countries","Ship to specific countries","Disable shipping & shipping calculations"]],["Shipping Countries","shipping_countries","textarea"],["Default Customer Location","default_customer_location","select",["","No location by default","Shop country/region","Geolocate","Geolocate (with page caching support)"]],["Store Opening / Closing Hours","store_hours"],["Store Settings Notes","store_settings_notes","textarea"]]}
+]},
+{title:"Content & Brand Assets",bn:"কনটেন্ট ও ব্র্যান্ড অ্যাসেট",hint:"লিংক বা সরাসরি লেখা—যেভাবে সহজ হয়।",groups:[
+{title:"Content / Assets to Share",fields:[["Website Content — Google Docs Link or Text","website_content","textarea"],["Product List — Google Sheets Link or Text","product_list","textarea"],["Logo / Product Images / Brand Assets — Google Drive Link","asset_links","textarea"],["Reference Website Links","reference_links","textarea"],["Content & Design Notes","content_notes","textarea"]]}
+]},
+{title:"Social Media",bn:"সোশ্যাল মিডিয়া",hint:"শুধু নতুন অ্যাকাউন্ট বা পরিবর্তিত লিংকগুলো দিন।",groups:[
+{title:"Social Media Updates",fields:[["Facebook Page URL","facebook"],["Instagram URL","instagram"],["TikTok URL","tiktok"],["YouTube URL","youtube"],["Other Social Media Links","other_social","textarea"]]}
+]},
+{title:"Delivery Information",bn:"ডেলিভারি তথ্য",hint:"ডেলিভারি বা শিপিং সেটিংসে পরিবর্তন থাকলে এই অংশ চালু করুন।",groups:[
+{title:"Add Shipping / Delivery Information",fields:[["Delivery Areas","delivery_areas","textarea"],["Delivery Charges","delivery_charges","textarea"],["Estimated Delivery Time","delivery_time"],["Cash on Delivery Availability","cod_availability","select",["","Available","Not available","Only in selected areas"]],["Free Delivery Conditions","free_delivery"],["Additional Delivery Instructions","delivery_instructions","textarea"]]}
+]},
+{title:"Payment & Policies",bn:"পেমেন্ট ও পলিসি",hint:"যে তথ্য নতুন বা আপডেট হয়েছে, শুধু সেটাই শেয়ার করুন।",groups:[
+{title:"Payment Information",fields:[["Accepted Payment Methods","accepted_payments","textarea"],["Payment Instructions","payment_instructions","textarea"]]},
+{title:"Website Policies",fields:[["Return / Exchange / Refund Policy — Text or Document Link","returns_policy","textarea"],["Privacy Policy / Terms & Conditions — Text or Document Link","privacy_terms","textarea"]]}
+]},
+{title:"Additional Notes",bn:"অতিরিক্ত নির্দেশনা",hint:"কোনো অনুরোধ, পরবর্তী সময়ে দেওয়ার ফাইল বা সংশোধনের কথা এখানে লিখতে পারেন।",groups:[
+{title:"Final Notes",on:true,fields:[["Special Requests or Instructions","special_requests","textarea"],["Information or Files to Be Shared Later","share_later","textarea"]]}
+]}];
+const $=s=>document.querySelector(s);let current=0;
+function esc(s){return String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));}
+function makeField(f){const [label,name,type="text",options]=f;const attrs='name="'+esc(name)+'" id="'+esc(name)+'"';let control;if(type==="textarea")control='<textarea '+attrs+' rows="3" placeholder="এখানে লিখুন অথবা ডকুমেন্ট/ফাইলের লিংক দিন..."></textarea>';else if(type==="select")control='<select '+attrs+'>'+options.map((o,i)=>'<option value="'+esc(o)+'">'+(i?esc(o):"Select if applicable")+'</option>').join("")+'</select>';else control='<input '+attrs+' type="text" placeholder="যদি নতুন বা পরিবর্তিত তথ্য থাকে...">';return '<label class="field"><span>'+esc(label)+'</span>'+control+'</label>';}
+function makeStep(s,i){return '<section class="step" data-step="'+i+'"'+(i?' hidden':'')+'><div class="section-kicker">0'+(i+1)+' · '+esc(s.title.toUpperCase())+'</div><h2>'+esc(s.bn)+'</h2><p class="section-desc">'+esc(s.hint)+'</p>'+s.groups.map((g,j)=>{const key="section_"+i+"_"+j;return '<div class="optional-group"><label class="toggle-row"><input class="group-toggle" type="checkbox" name="'+key+'" data-target="'+key+'" '+(g.on?'checked':'')+'><span class="toggle-switch" aria-hidden="true"></span><span class="toggle-copy"><strong>'+esc(g.title)+'</strong><small>'+esc(g.desc||"এই অংশের তথ্য যোগ করতে চাইলে নির্বাচন করুন")+'</small></span></label><div class="group-fields" id="'+key+'" '+(g.on?'':'hidden')+'><div class="fields">'+g.fields.map(makeField).join("")+'</div></div></div>';}).join("")+(i===5?'<div class="review" id="review"><strong>আপনার তথ্যের সারাংশ</strong><div id="reviewLines"></div></div><p class="review-hint">আগের তথ্যের সঙ্গে কোনো অমিল থাকলে পরিবর্তনের আগে আমাদের টিম আপনার সঙ্গে নিশ্চিত হবে।</p>':'')+'</section>';}
+$("#stepContainer").innerHTML=steps.map(makeStep).join("");
+$("#stepPills").innerHTML=steps.map((s,i)=>'<button type="button" data-go="'+i+'" title="'+esc(s.title)+'">'+(i+1)+'</button>').join("");
+$("#year").textContent=new Date().getFullYear();
+if(CONFIG.logoUrl){$("#brandLogo").src=CONFIG.logoUrl;$("#brandLogo").hidden=false;$("#brandMark").hidden=true;$("#brandLogo").onerror=()=>{$("#brandLogo").hidden=true;$("#brandMark").hidden=false;};}
+function syncGroups(){document.querySelectorAll(".group-toggle").forEach(cb=>{const panel=document.getElementById(cb.dataset.target);panel.hidden=!cb.checked;panel.querySelectorAll("input,textarea,select").forEach(el=>el.disabled=!cb.checked);});}
+function show(n){current=Math.min(steps.length-1,Math.max(0,n));document.querySelectorAll(".step").forEach((x,i)=>x.hidden=i!==current);$("#stepCounter").textContent="STEP 0"+(current+1)+" / 0"+steps.length;$("#progressBar").style.width=((current+1)/steps.length*100)+"%";$("#backBtn").hidden=current===0;$("#nextBtn").hidden=current===steps.length-1;$("#submitBtn").hidden=current!==steps.length-1;document.querySelectorAll("[data-go]").forEach((b,i)=>{b.classList.toggle("active",i===current);b.classList.toggle("visited",i<current)});$("#formError").hidden=true;if(current===steps.length-1)review();if(innerWidth<900)$("#formCard").scrollIntoView({behavior:"smooth",block:"start"});}
+function review(){const lines=[];document.querySelectorAll(".group-toggle:checked").forEach(cb=>{const panel=document.getElementById(cb.dataset.target);const fields=[...panel.querySelectorAll("input,textarea,select")].filter(f=>f.value.trim());if(fields.length){const title=cb.closest(".optional-group").querySelector(".toggle-copy strong").textContent;lines.push('<div class="review-title">'+esc(title)+'</div>');fields.forEach(f=>{const label=f.closest(".field").querySelector("span").textContent;lines.push('<div class="review-line"><span>'+esc(label)+'</span><b>'+esc(f.value.length>130?f.value.slice(0,127)+"…":f.value)+'</b></div>')})}});$("#reviewLines").innerHTML=lines.join("")||'<p>কোনো অতিরিক্ত তথ্য যোগ করা হয়নি। প্রয়োজন হলে আগের ধাপে ফিরে লিখতে পারেন।</p>';}
+function save(){const data={};document.querySelectorAll("#clientForm input:not([type=hidden]),#clientForm textarea,#clientForm select").forEach(el=>{if(!el.name||el.name==="_gotcha")return;data[el.name]=el.type==="checkbox"?el.checked:el.value;});try{localStorage.setItem(CONFIG.draftKey,JSON.stringify({data,current}));}catch(e){}}
+function restore(){try{const a=JSON.parse(localStorage.getItem(CONFIG.draftKey));if(!a)return;document.querySelectorAll("#clientForm input:not([type=hidden]),#clientForm textarea,#clientForm select").forEach(el=>{if(!(el.name in a.data))return;if(el.type==="checkbox")el.checked=!!a.data[el.name];else el.value=a.data[el.name];});current=Number.isInteger(a.current)?a.current:0;}catch(e){}}
+$("#clientForm").addEventListener("input",save);
+$("#clientForm").addEventListener("change",e=>{if(e.target.matches(".group-toggle"))syncGroups();save()});
+$("#nextBtn").onclick=()=>{save();show(current+1)};
+$("#backBtn").onclick=()=>{save();show(current-1)};
+document.querySelectorAll("[data-go]").forEach(b=>b.onclick=()=>{save();show(Number(b.dataset.go))});
+function err(t){$("#formError").textContent=t;$("#formError").hidden=false;$("#formError").scrollIntoView({block:"center",behavior:"smooth"})}
+$("#clientForm").addEventListener("submit",async e=>{e.preventDefault();$("#formError").hidden=true;const payload=new FormData($("#clientForm"));payload.set("section_summary",[...document.querySelectorAll(".group-toggle:checked")].map(x=>x.closest(".optional-group").querySelector(".toggle-copy strong").textContent).join(", "));payload.set("_subject","Web Mind BD Client Update — "+(payload.get("business_name")||payload.get("contact_person")||"New project"));const submit=$("#submitBtn");submit.disabled=true;submit.textContent="সাবমিট হচ্ছে...";try{const res=await fetch(CONFIG.endpoint,{method:"POST",body:payload,headers:{Accept:"application/json"}});if(!res.ok){let error="সাবমিশন ব্যর্থ হয়েছে। অনুগ্রহ করে আবার চেষ্টা করুন।";try{const j=await res.json();if(j.errors)error=j.errors.map(x=>x.message).join(" ");}catch(e){}throw new Error(error)}localStorage.removeItem(CONFIG.draftKey);$("#formContent").hidden=true;$("#successContent").hidden=false;$("#formCard").scrollIntoView({behavior:"smooth"});}catch(ex){err(ex.message||"ইন্টারনেট সংযোগ বা ফর্ম সেটিংস পরীক্ষা করুন।")}finally{submit.disabled=false;submit.textContent="তথ্য জমা দিন ↗";}});
+$("#newFormBtn").onclick=()=>{const f=$("#clientForm");f.reset();try{localStorage.removeItem(CONFIG.draftKey)}catch(e){}$("#formContent").hidden=false;$("#successContent").hidden=true;syncGroups();show(0)};
+restore();syncGroups();show(current);
