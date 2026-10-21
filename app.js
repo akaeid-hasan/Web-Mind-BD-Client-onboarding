@@ -3,10 +3,10 @@
  * Create a form at https://formspree.io and paste its endpoint below.
  */
 const SETTINGS = {
-  agencyName: 'YOUR AGENCY',
+  agencyName: 'Web Mind BD',
   logoUrl: '', // e.g. 'https://yourdomain.com/logo.png' or 'assets/logo.png'
-  formspreeEndpoint: 'https://formspree.io/f/REPLACE_WITH_YOUR_FORM_ID',
-  projectLabel: 'Website Project'
+  formspreeEndpoint: 'https://formspree.io/f/xqperyzd',
+  projectLabel: 'Client Onboarding'
 };
 
 const form = document.getElementById('clientForm');
