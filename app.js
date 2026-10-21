@@ -1,44 +1,381 @@
-const CONFIG={endpoint:"https://formspree.io/f/xqperyzd",logoUrl:"",draftKey:"webmind_intake_v3"};
-const steps=[
-{title:"Website & Business Details",bn:"ওয়েবসাইট ও ব্যবসার তথ্য",hint:"শুধু নতুন বা পরিবর্তিত তথ্য দিন; আগে যা দেওয়া আছে পুনরায় প্রয়োজন নেই।",groups:[
-{title:"Business & Contact",on:true,fields:[["Brand / Business Name","business_name"],["Existing Website URL","existing_website"],["New Information or Changes Needed","requested_changes","textarea"],["Contact Person’s Name","contact_person"],["Phone / WhatsApp Number","contact_phone"],["Email Address","contact_email"],["Business Address","business_address","textarea"]]},
-{title:"WooCommerce Store Settings",desc:"স্টোর, বিক্রয় অঞ্চল, কারেন্সি বা checkout settings নতুন করে নির্ধারণ করতে চাইলে খুলুন।",fields:[["Store Address Line 1","store_address_1"],["Store Address Line 2","store_address_2"],["City","store_city"],["Country / State / Region","store_country_state"],["Postcode / ZIP","store_postcode"],["Store Currency","store_currency","select",["","BDT — Bangladeshi Taka","USD — US Dollar","EUR — Euro","GBP — British Pound","INR — Indian Rupee","Other / Specify in notes"]],["Selling Locations","selling_locations","select",["","Sell to all countries","Sell to all countries except selected","Sell to specific countries"]],["Selling Countries / Exclusions","selling_countries","textarea"],["Shipping Locations (WooCommerce)","shipping_locations","select",["","Ship to all countries you sell to","Ship to all countries","Ship to specific countries","Disable shipping & shipping calculations"]],["Shipping Countries","shipping_countries","textarea"],["Default Customer Location","default_customer_location","select",["","No location by default","Shop country/region","Geolocate","Geolocate (with page caching support)"]],["Store Opening / Closing Hours","store_hours"],["Store Settings Notes","store_settings_notes","textarea"]]}
-]},
-{title:"Content & Brand Assets",bn:"কনটেন্ট ও ব্র্যান্ড অ্যাসেট",hint:"লিংক বা সরাসরি লেখা—যেভাবে সহজ হয়।",groups:[
-{title:"Content / Assets to Share",fields:[["Website Content — Google Docs Link or Text","website_content","textarea"],["Product List — Google Sheets Link or Text","product_list","textarea"],["Logo / Product Images / Brand Assets — Google Drive Link","asset_links","textarea"],["Reference Website Links","reference_links","textarea"],["Content & Design Notes","content_notes","textarea"]]}
-]},
-{title:"Social Media",bn:"সোশ্যাল মিডিয়া",hint:"শুধু নতুন অ্যাকাউন্ট বা পরিবর্তিত লিংকগুলো দিন।",groups:[
-{title:"Social Media Updates",fields:[["Facebook Page URL","facebook"],["Instagram URL","instagram"],["TikTok URL","tiktok"],["YouTube URL","youtube"],["Other Social Media Links","other_social","textarea"]]}
-]},
-{title:"Delivery Information",bn:"ডেলিভারি তথ্য",hint:"ডেলিভারি বা শিপিং সেটিংসে পরিবর্তন থাকলে এই অংশ চালু করুন।",groups:[
-{title:"Add Shipping / Delivery Information",fields:[["Delivery Areas","delivery_areas","textarea"],["Delivery Charges","delivery_charges","textarea"],["Estimated Delivery Time","delivery_time"],["Cash on Delivery Availability","cod_availability","select",["","Available","Not available","Only in selected areas"]],["Free Delivery Conditions","free_delivery"],["Additional Delivery Instructions","delivery_instructions","textarea"]]}
-]},
-{title:"Payment & Policies",bn:"পেমেন্ট ও পলিসি",hint:"যে তথ্য নতুন বা আপডেট হয়েছে, শুধু সেটাই শেয়ার করুন।",groups:[
-{title:"Payment Information",fields:[["Accepted Payment Methods","accepted_payments","textarea"],["Payment Instructions","payment_instructions","textarea"]]},
-{title:"Website Policies",fields:[["Return / Exchange / Refund Policy — Text or Document Link","returns_policy","textarea"],["Privacy Policy / Terms & Conditions — Text or Document Link","privacy_terms","textarea"]]}
-]},
-{title:"Additional Notes",bn:"অতিরিক্ত নির্দেশনা",hint:"কোনো অনুরোধ, পরবর্তী সময়ে দেওয়ার ফাইল বা সংশোধনের কথা এখানে লিখতে পারেন।",groups:[
-{title:"Final Notes",on:true,fields:[["Special Requests or Instructions","special_requests","textarea"],["Information or Files to Be Shared Later","share_later","textarea"]]}
-]}];
-const $=s=>document.querySelector(s);let current=0;
-function esc(s){return String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));}
-function makeField(f){const [label,name,type="text",options]=f;const attrs='name="'+esc(name)+'" id="'+esc(name)+'"';let control;if(type==="textarea")control='<textarea '+attrs+' rows="3" placeholder="এখানে লিখুন অথবা ডকুমেন্ট/ফাইলের লিংক দিন..."></textarea>';else if(type==="select")control='<select '+attrs+'>'+options.map((o,i)=>'<option value="'+esc(o)+'">'+(i?esc(o):"Select if applicable")+'</option>').join("")+'</select>';else control='<input '+attrs+' type="text" placeholder="যদি নতুন বা পরিবর্তিত তথ্য থাকে...">';return '<label class="field"><span>'+esc(label)+'</span>'+control+'</label>';}
-function makeStep(s,i){return '<section class="step" data-step="'+i+'"'+(i?' hidden':'')+'><div class="section-kicker">0'+(i+1)+' · '+esc(s.title.toUpperCase())+'</div><h2>'+esc(s.bn)+'</h2><p class="section-desc">'+esc(s.hint)+'</p>'+s.groups.map((g,j)=>{const key="section_"+i+"_"+j;return '<div class="optional-group"><label class="toggle-row"><input class="group-toggle" type="checkbox" name="'+key+'" data-target="'+key+'" '+(g.on?'checked':'')+'><span class="toggle-switch" aria-hidden="true"></span><span class="toggle-copy"><strong>'+esc(g.title)+'</strong><small>'+esc(g.desc||"এই অংশের তথ্য যোগ করতে চাইলে নির্বাচন করুন")+'</small></span></label><div class="group-fields" id="'+key+'" '+(g.on?'':'hidden')+'><div class="fields">'+g.fields.map(makeField).join("")+'</div></div></div>';}).join("")+(i===5?'<div class="review" id="review"><strong>আপনার তথ্যের সারাংশ</strong><div id="reviewLines"></div></div><p class="review-hint">আগের তথ্যের সঙ্গে কোনো অমিল থাকলে পরিবর্তনের আগে আমাদের টিম আপনার সঙ্গে নিশ্চিত হবে।</p>':'')+'</section>';}
-$("#stepContainer").innerHTML=steps.map(makeStep).join("");
-$("#stepPills").innerHTML=steps.map((s,i)=>'<button type="button" data-go="'+i+'" title="'+esc(s.title)+'">'+(i+1)+'</button>').join("");
-$("#year").textContent=new Date().getFullYear();
-if(CONFIG.logoUrl){$("#brandLogo").src=CONFIG.logoUrl;$("#brandLogo").hidden=false;$("#brandMark").hidden=true;$("#brandLogo").onerror=()=>{$("#brandLogo").hidden=true;$("#brandMark").hidden=false;};}
-function syncGroups(){document.querySelectorAll(".group-toggle").forEach(cb=>{const panel=document.getElementById(cb.dataset.target);panel.hidden=!cb.checked;panel.querySelectorAll("input,textarea,select").forEach(el=>el.disabled=!cb.checked);});}
-function show(n){current=Math.min(steps.length-1,Math.max(0,n));document.querySelectorAll(".step").forEach((x,i)=>x.hidden=i!==current);$("#stepCounter").textContent="STEP 0"+(current+1)+" / 0"+steps.length;$("#progressBar").style.width=((current+1)/steps.length*100)+"%";$("#backBtn").hidden=current===0;$("#nextBtn").hidden=current===steps.length-1;$("#submitBtn").hidden=current!==steps.length-1;document.querySelectorAll("[data-go]").forEach((b,i)=>{b.classList.toggle("active",i===current);b.classList.toggle("visited",i<current)});$("#formError").hidden=true;if(current===steps.length-1)review();if(innerWidth<900)$("#formCard").scrollIntoView({behavior:"smooth",block:"start"});}
-function review(){const lines=[];document.querySelectorAll(".group-toggle:checked").forEach(cb=>{const panel=document.getElementById(cb.dataset.target);const fields=[...panel.querySelectorAll("input,textarea,select")].filter(f=>f.value.trim());if(fields.length){const title=cb.closest(".optional-group").querySelector(".toggle-copy strong").textContent;lines.push('<div class="review-title">'+esc(title)+'</div>');fields.forEach(f=>{const label=f.closest(".field").querySelector("span").textContent;lines.push('<div class="review-line"><span>'+esc(label)+'</span><b>'+esc(f.value.length>130?f.value.slice(0,127)+"…":f.value)+'</b></div>')})}});$("#reviewLines").innerHTML=lines.join("")||'<p>কোনো অতিরিক্ত তথ্য যোগ করা হয়নি। প্রয়োজন হলে আগের ধাপে ফিরে লিখতে পারেন।</p>';}
-function save(){const data={};document.querySelectorAll("#clientForm input:not([type=hidden]),#clientForm textarea,#clientForm select").forEach(el=>{if(!el.name||el.name==="_gotcha")return;data[el.name]=el.type==="checkbox"?el.checked:el.value;});try{localStorage.setItem(CONFIG.draftKey,JSON.stringify({data,current}));}catch(e){}}
-function restore(){try{const a=JSON.parse(localStorage.getItem(CONFIG.draftKey));if(!a)return;document.querySelectorAll("#clientForm input:not([type=hidden]),#clientForm textarea,#clientForm select").forEach(el=>{if(!(el.name in a.data))return;if(el.type==="checkbox")el.checked=!!a.data[el.name];else el.value=a.data[el.name];});current=Number.isInteger(a.current)?a.current:0;}catch(e){}}
-$("#clientForm").addEventListener("input",save);
-$("#clientForm").addEventListener("change",e=>{if(e.target.matches(".group-toggle"))syncGroups();save()});
-$("#nextBtn").onclick=()=>{save();show(current+1)};
-$("#backBtn").onclick=()=>{save();show(current-1)};
-document.querySelectorAll("[data-go]").forEach(b=>b.onclick=()=>{save();show(Number(b.dataset.go))});
-function err(t){$("#formError").textContent=t;$("#formError").hidden=false;$("#formError").scrollIntoView({block:"center",behavior:"smooth"})}
-$("#clientForm").addEventListener("submit",async e=>{e.preventDefault();$("#formError").hidden=true;const payload=new FormData($("#clientForm"));payload.set("section_summary",[...document.querySelectorAll(".group-toggle:checked")].map(x=>x.closest(".optional-group").querySelector(".toggle-copy strong").textContent).join(", "));payload.set("_subject","Web Mind BD Client Update — "+(payload.get("business_name")||payload.get("contact_person")||"New project"));const submit=$("#submitBtn");submit.disabled=true;submit.textContent="সাবমিট হচ্ছে...";try{const res=await fetch(CONFIG.endpoint,{method:"POST",body:payload,headers:{Accept:"application/json"}});if(!res.ok){let error="সাবমিশন ব্যর্থ হয়েছে। অনুগ্রহ করে আবার চেষ্টা করুন।";try{const j=await res.json();if(j.errors)error=j.errors.map(x=>x.message).join(" ");}catch(e){}throw new Error(error)}localStorage.removeItem(CONFIG.draftKey);$("#formContent").hidden=true;$("#successContent").hidden=false;$("#formCard").scrollIntoView({behavior:"smooth"});}catch(ex){err(ex.message||"ইন্টারনেট সংযোগ বা ফর্ম সেটিংস পরীক্ষা করুন।")}finally{submit.disabled=false;submit.textContent="তথ্য জমা দিন ↗";}});
-$("#newFormBtn").onclick=()=>{const f=$("#clientForm");f.reset();try{localStorage.removeItem(CONFIG.draftKey)}catch(e){}$("#formContent").hidden=false;$("#successContent").hidden=true;syncGroups();show(0)};
-restore();syncGroups();show(current);
+
+const CONFIG = {
+  endpoint: 'https://formspree.io/f/xqperyzd',
+  storageKey: 'webmind_client_onboarding_v4'
+};
+
+const STEPS = [
+  {
+    kicker: '01 · WEBSITE & BUSINESS DETAILS',
+    title: 'ওয়েবসাইট ও ব্যবসার তথ্য',
+    desc: 'Brand, contact, existing website, এবং প্রয়োজনীয় business information চাইলে এই step-এর section ON করুন।',
+    groups: [
+      {
+        title: 'Business Basics',
+        desc: 'Brand / business name, contact info, address এবং changes জানান।',
+        fields: [
+          { label:'Brand / Business Name', name:'business_name', placeholder:'যেমন: আপনার business / brand name' },
+          { label:'Existing Website URL', name:'existing_website', placeholder:'https://example.com' },
+          { label:'Contact Person’s Name', name:'contact_person', placeholder:'যার সঙ্গে যোগাযোগ করব' },
+          { label:'Phone / WhatsApp Number', name:'phone_whatsapp', placeholder:'01XXXXXXXXX' },
+          { label:'Email Address', name:'email_address', placeholder:'name@example.com' },
+          { label:'Business Address', name:'business_address', type:'textarea', placeholder:'Business / office / store address', full:true },
+          { label:'New Information or Changes Needed', name:'changes_needed', type:'textarea', placeholder:'আগের info থেকে কী পরিবর্তন বা নতুন কিছু দরকার তা লিখুন...', full:true }
+        ]
+      },
+      {
+        title: 'WooCommerce Store Settings',
+        desc: 'Store address, selling countries, shipping locations, currency ইত্যাদি দিতে চাইলে এই section ON করুন।',
+        fields: [
+          { label:'Store Address Line 1', name:'store_address_line_1', placeholder:'Address line 1' },
+          { label:'Store Address Line 2', name:'store_address_line_2', placeholder:'Address line 2' },
+          { label:'City', name:'store_city', placeholder:'City' },
+          { label:'Country / State', name:'store_country_state', placeholder:'যেমন: Bangladesh — Dhaka' },
+          { label:'Postcode / ZIP', name:'store_zip', placeholder:'Postcode / ZIP' },
+          { label:'Website Currency', name:'website_currency', placeholder:'যেমন: BDT / USD' },
+          { label:'Selling Location(s)', name:'selling_locations', type:'textarea', placeholder:'যেমন: Sell to all countries / specific countries', full:true },
+          { label:'Shipping Location(s)', name:'shipping_locations', type:'textarea', placeholder:'যেমন: Ship to all countries you sell to / specific countries', full:true },
+          { label:'Default Customer Location', name:'default_customer_location', placeholder:'যেমন: Shop base address / no location by default' }
+        ]
+      }
+    ]
+  },
+  {
+    kicker: '02 · CONTENT & BRAND ASSETS',
+    title: 'কনটেন্ট ও ব্র্যান্ড অ্যাসেট',
+    desc: 'Link বা text — যেভাবে সহজ হয় সেভাবে content, product list, design reference, assets শেয়ার করুন।',
+    groups: [
+      {
+        title: 'Content / Assets',
+        desc: 'এই section ON করলে content, doc link, drive link, reference site link-এর field দেখাবে।',
+        fields: [
+          { label:'Website Content — Google Docs Link or Text', name:'website_content', type:'textarea', placeholder:'Google Docs link দিন বা সরাসরি content লিখুন...', full:true },
+          { label:'Product List — Google Sheets Link or Text', name:'product_list', type:'textarea', placeholder:'Google Sheets link দিন বা product list লিখুন...', full:true },
+          { label:'Logo / Product Images / Brand Assets — Google Drive Link', name:'brand_assets_link', type:'textarea', placeholder:'Google Drive / Dropbox / asset link', full:true },
+          { label:'Reference Website Links', name:'reference_links', type:'textarea', placeholder:'যে website দেখে design / layout বুঝতে হবে তার link দিন...', full:true },
+          { label:'Content & Design Notes', name:'content_design_notes', type:'textarea', placeholder:'Design preference, section instruction, layout note ইত্যাদি লিখুন...', full:true }
+        ]
+      }
+    ]
+  },
+  {
+    kicker: '03 · SOCIAL MEDIA',
+    title: 'সোশ্যাল মিডিয়া',
+    desc: 'শুধু যেসব social link প্রয়োজন সেগুলো দিন। বাকিগুলো empty রাখলেও সমস্যা নেই।',
+    groups: [
+      {
+        title: 'Social Media Links',
+        desc: 'এই section ON করলে social media field দেখাবে।',
+        fields: [
+          { label:'Facebook Page URL', name:'facebook_page_url', placeholder:'https://facebook.com/yourpage' },
+          { label:'Instagram URL', name:'instagram_url', placeholder:'https://instagram.com/yourpage' },
+          { label:'TikTok URL', name:'tiktok_url', placeholder:'https://tiktok.com/@yourpage' },
+          { label:'YouTube URL', name:'youtube_url', placeholder:'https://youtube.com/@yourpage' },
+          { label:'Other Social Media Links', name:'other_social_links', type:'textarea', placeholder:'অন্যান্য social media link এখানে দিন...', full:true }
+        ]
+      }
+    ]
+  },
+  {
+    kicker: '04 · DELIVERY INFORMATION',
+    title: 'ডেলিভারি তথ্য',
+    desc: 'Shipping / delivery setup প্রয়োজন হলে এই step-এর section ON করুন। না হলে OFF রেখেই next করুন।',
+    groups: [
+      {
+        title: 'Shipping / Delivery Info',
+        desc: 'এই section ON করলে delivery area, charge, COD, free delivery ইত্যাদির field দেখাবে।',
+        fields: [
+          { label:'Delivery Areas', name:'delivery_areas', type:'textarea', placeholder:'যেমন: ঢাকা / সারা বাংলাদেশ / specific area', full:true },
+          { label:'Delivery Charges', name:'delivery_charges', type:'textarea', placeholder:'যেমন: ঢাকার ভিতরে 70, বাইরে 120', full:true },
+          { label:'Estimated Delivery Time', name:'estimated_delivery_time', placeholder:'যেমন: 1–3 working days' },
+          { label:'Cash on Delivery Availability', name:'cod_availability', placeholder:'যেমন: Available / selected areas only' },
+          { label:'Free Delivery Conditions', name:'free_delivery_conditions', placeholder:'যেমন: above 2000 BDT' },
+          { label:'Additional Delivery Instructions', name:'additional_delivery_instructions', type:'textarea', placeholder:'Extra delivery rules or instruction...', full:true }
+        ]
+      }
+    ]
+  },
+  {
+    kicker: '05 · PAYMENT & POLICIES',
+    title: 'পেমেন্ট ও পলিসি',
+    desc: 'Payment method, instructions, return / privacy policy প্রয়োজন হলে section ON করুন।',
+    groups: [
+      {
+        title: 'Payment Information',
+        desc: 'এই section ON করলে payment related field দেখাবে।',
+        fields: [
+          { label:'Accepted Payment Methods', name:'accepted_payment_methods', type:'textarea', placeholder:'যেমন: bKash, Nagad, COD, Bank transfer', full:true },
+          { label:'Payment Instructions', name:'payment_instructions', type:'textarea', placeholder:'যদি নির্দিষ্ট instruction থাকে, এখানে লিখুন...', full:true }
+        ]
+      },
+      {
+        title: 'Policies',
+        desc: 'এই section ON করলে return / exchange / refund / privacy / terms field দেখাবে।',
+        fields: [
+          { label:'Return / Exchange / Refund Policy — Text or Document Link', name:'return_exchange_refund_policy', type:'textarea', placeholder:'Policy text অথবা document link দিন...', full:true },
+          { label:'Privacy Policy / Terms & Conditions — Text or Document Link', name:'privacy_terms_policy', type:'textarea', placeholder:'Policy text অথবা document link দিন...', full:true }
+        ]
+      }
+    ]
+  },
+  {
+    kicker: '06 · ADDITIONAL NOTES',
+    title: 'অতিরিক্ত নির্দেশনা',
+    desc: 'যা পরে শেয়ার করবেন, special request, বা extra note — সব এখানে দিতে পারবেন।',
+    groups: [
+      {
+        title: 'Additional Notes',
+        desc: 'Final extra note বা later shared file info দিতে চাইলে এই section ON করুন।',
+        fields: [
+          { label:'Special Requests or Instructions', name:'special_requests', type:'textarea', placeholder:'Any special request / instruction...', full:true },
+          { label:'Information or Files to Be Shared Later', name:'files_shared_later', type:'textarea', placeholder:'পরে যেসব info / file দেবেন তা এখানে লিখুন...', full:true }
+        ]
+      }
+    ]
+  }
+];
+
+const form = document.getElementById('clientForm');
+const stepContainer = document.getElementById('stepContainer');
+const stepPills = document.getElementById('stepPills');
+const progressBar = document.getElementById('progressBar');
+const stepCount = document.getElementById('stepCount');
+const backBtn = document.getElementById('backBtn');
+const nextBtn = document.getElementById('nextBtn');
+const submitBtn = document.getElementById('submitBtn');
+const formError = document.getElementById('formError');
+const enabledSections = document.getElementById('enabledSections');
+const successContent = document.getElementById('successContent');
+const year = document.getElementById('year');
+year.textContent = new Date().getFullYear();
+
+let currentStep = 0;
+
+function escapeHtml(value) {
+  return String(value).replace(/[&<>"']/g, s => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[s]));
+}
+
+function fieldMarkup(field, stepIndex, groupIndex, fieldIndex) {
+  const id = `field_${stepIndex}_${groupIndex}_${fieldIndex}`;
+  const label = `<span>${escapeHtml(field.label)}</span>`;
+  const help = field.help ? `<small>${escapeHtml(field.help)}</small>` : '';
+  const className = field.type === 'textarea' ? 'textarea' : field.type === 'select' ? 'select' : 'input';
+  let control = '';
+
+  if (field.type === 'textarea') {
+    control = `<textarea class="${className}" id="${id}" name="${field.name}" placeholder="${escapeHtml(field.placeholder || '')}"></textarea>`;
+  } else if (field.type === 'select') {
+    const options = (field.options || []).map(opt => `<option value="${escapeHtml(opt)}">${escapeHtml(opt)}</option>`).join('');
+    control = `<select class="${className}" id="${id}" name="${field.name}">${options}</select>`;
+  } else {
+    control = `<input class="${className}" id="${id}" name="${field.name}" type="text" placeholder="${escapeHtml(field.placeholder || '')}">`;
+  }
+
+  return `<label class="field ${field.full ? 'full' : ''}">${label}${control}${help}</label>`;
+}
+
+function groupMarkup(group, stepIndex, groupIndex) {
+  const targetId = `group_body_${stepIndex}_${groupIndex}`;
+  return `
+    <div class="optional-group">
+      <div class="group-head">
+        <div class="group-copy">
+          <span class="kicker">OPTIONAL SECTION</span>
+          <strong>${escapeHtml(group.title)}</strong>
+          <small>${escapeHtml(group.desc)} Toggle ON করলে নিচের field দেখা যাবে।</small>
+        </div>
+        <div class="switch-wrap">
+          <span class="switch-text">Toggle ON</span>
+          <label class="switch" aria-label="Toggle ${escapeHtml(group.title)}">
+            <input type="checkbox" class="group-toggle" name="toggle_${stepIndex}_${groupIndex}" data-target="${targetId}">
+            <span class="slider"></span>
+          </label>
+        </div>
+      </div>
+      <div class="group-body" id="${targetId}" hidden>
+        <div class="field-grid">
+          ${group.fields.map((field, fieldIndex) => fieldMarkup(field, stepIndex, groupIndex, fieldIndex)).join('')}
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+function stepMarkup(step, stepIndex) {
+  return `
+    <section class="step" data-step="${stepIndex}" ${stepIndex === 0 ? '' : 'hidden'}>
+      <span class="section-kicker">${escapeHtml(step.kicker)}</span>
+      <h3>${escapeHtml(step.title)}</h3>
+      <p class="step-desc">${escapeHtml(step.desc)}</p>
+      ${step.groups.map((group, groupIndex) => groupMarkup(group, stepIndex, groupIndex)).join('')}
+      ${stepIndex === STEPS.length - 1 ? '<div class="final-note">সব field optional। প্রয়োজন হলে ON করুন, না হলে OFF রেখেই submit করতে পারবেন।</div><div class="review-box" id="reviewBox"><h4>Enabled Sections Summary</h4><div id="reviewItems"></div></div>' : ''}
+    </section>
+  `;
+}
+
+function render() {
+  stepContainer.innerHTML = STEPS.map((step, idx) => stepMarkup(step, idx)).join('');
+  stepPills.innerHTML = STEPS.map((step, idx) => `<button type="button" data-step-go="${idx}">${idx + 1}</button>`).join('');
+}
+
+function updateTogglePanels() {
+  document.querySelectorAll('.group-toggle').forEach(toggle => {
+    const panel = document.getElementById(toggle.dataset.target);
+    if (!panel) return;
+    panel.hidden = !toggle.checked;
+    panel.querySelectorAll('input, textarea, select').forEach(el => {
+      el.disabled = !toggle.checked;
+    });
+  });
+}
+
+function updateReview() {
+  const reviewItems = document.getElementById('reviewItems');
+  if (!reviewItems) return;
+  const items = [];
+  document.querySelectorAll('.group-toggle').forEach(toggle => {
+    if (toggle.checked) {
+      const title = toggle.closest('.optional-group').querySelector('.group-copy strong').textContent;
+      items.push(title);
+    }
+  });
+  enabledSections.value = items.join(' | ');
+  reviewItems.innerHTML = items.length ? items.map(item => `<div class="review-item"><strong>${escapeHtml(item)}</strong><span>Enabled</span></div>`).join('') : '<div class="review-item"><strong>No optional section enabled yet</strong><span>You can still submit if needed</span></div>';
+}
+
+function showStep(stepIndex) {
+  currentStep = Math.max(0, Math.min(STEPS.length - 1, stepIndex));
+  document.querySelectorAll('.step').forEach((step, index) => {
+    step.hidden = index !== currentStep;
+  });
+  document.querySelectorAll('[data-step-go]').forEach((btn, index) => {
+    btn.classList.toggle('active', index === currentStep);
+  });
+  stepCount.textContent = `STEP ${String(currentStep + 1).padStart(2, '0')} / ${String(STEPS.length).padStart(2, '0')}`;
+  progressBar.style.width = `${((currentStep + 1) / STEPS.length) * 100}%`;
+  backBtn.hidden = currentStep === 0;
+  nextBtn.hidden = currentStep === STEPS.length - 1;
+  submitBtn.hidden = currentStep !== STEPS.length - 1;
+  updateReview();
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function saveDraft() {
+  const data = {};
+  form.querySelectorAll('input, textarea, select').forEach(el => {
+    if (!el.name || el.name === '_gotcha') return;
+    if (el.type === 'checkbox') data[el.name] = el.checked;
+    else data[el.name] = el.value;
+  });
+  localStorage.setItem(CONFIG.storageKey, JSON.stringify({ currentStep, data }));
+}
+
+function loadDraft() {
+  try {
+    const raw = localStorage.getItem(CONFIG.storageKey);
+    if (!raw) return;
+    const saved = JSON.parse(raw);
+    if (!saved || !saved.data) return;
+    form.querySelectorAll('input, textarea, select').forEach(el => {
+      if (!el.name || !(el.name in saved.data)) return;
+      if (el.type === 'checkbox') el.checked = !!saved.data[el.name];
+      else el.value = saved.data[el.name];
+    });
+    currentStep = Number.isInteger(saved.currentStep) ? saved.currentStep : 0;
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+function setError(message) {
+  formError.hidden = false;
+  formError.textContent = message;
+}
+
+function clearError() {
+  formError.hidden = true;
+  formError.textContent = '';
+}
+
+render();
+loadDraft();
+updateTogglePanels();
+showStep(currentStep);
+
+form.addEventListener('input', saveDraft);
+form.addEventListener('change', event => {
+  if (event.target.classList.contains('group-toggle')) {
+    updateTogglePanels();
+    updateReview();
+  }
+  saveDraft();
+});
+
+stepPills.addEventListener('click', event => {
+  const btn = event.target.closest('[data-step-go]');
+  if (!btn) return;
+  showStep(Number(btn.dataset.stepGo));
+  saveDraft();
+});
+
+backBtn.addEventListener('click', () => {
+  showStep(currentStep - 1);
+  saveDraft();
+});
+
+nextBtn.addEventListener('click', () => {
+  showStep(currentStep + 1);
+  saveDraft();
+});
+
+form.addEventListener('submit', async event => {
+  event.preventDefault();
+  clearError();
+  updateReview();
+  saveDraft();
+
+  const formData = new FormData(form);
+  const subjectSource = formData.get('business_name') || formData.get('contact_person') || 'New Client Update';
+  document.getElementById('subjectInput').value = `Web Mind BD — ${subjectSource}`;
+  formData.set('_subject', document.getElementById('subjectInput').value);
+  formData.set('enabled_sections', enabledSections.value);
+
+  const previousText = submitBtn.textContent;
+  submitBtn.disabled = true;
+  submitBtn.textContent = 'জমা হচ্ছে...';
+
+  try {
+    const response = await fetch(CONFIG.endpoint, {
+      method: 'POST',
+      headers: { 'Accept': 'application/json' },
+      body: formData
+    });
+
+    if (!response.ok) throw new Error('Submission failed');
+
+    form.hidden = true;
+    document.querySelector('.helper-bar').hidden = true;
+    document.querySelector('.progress-track').hidden = true;
+    document.getElementById('stepPills').hidden = true;
+    successContent.hidden = false;
+    localStorage.removeItem(CONFIG.storageKey);
+  } catch (error) {
+    setError('দুঃখিত, এই মুহূর্তে form submit করা যায়নি। একটু পর আবার চেষ্টা করুন।');
+  } finally {
+    submitBtn.disabled = false;
+    submitBtn.textContent = previousText;
+  }
+});
+
+document.getElementById('newFormBtn').addEventListener('click', () => {
+  form.reset();
+  localStorage.removeItem(CONFIG.storageKey);
+  form.hidden = false;
+  document.querySelector('.helper-bar').hidden = false;
+  document.querySelector('.progress-track').hidden = false;
+  document.getElementById('stepPills').hidden = false;
+  successContent.hidden = true;
+  updateTogglePanels();
+  clearError();
+  showStep(0);
+});
